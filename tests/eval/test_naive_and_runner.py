@@ -113,7 +113,9 @@ async def test_naive_retry_after_lost_response_refunds_twice(tmp_path: Path) -> 
         tool_call("issue_refund", "c3", **refund_args),  # the model retries after the 502
         text("Your refund is on its way."),
     )
-    result = await runner(tmp_path, agent, cache=False).run_one("naive", scenario, 1)
+    r = runner(tmp_path, agent, cache=False)
+    await r.sandboxes.prepare()
+    result = await r.run_one("naive", scenario, 1)
     assert result.duplicate_count == 1
     assert result.duplicate_paise == amount
 
