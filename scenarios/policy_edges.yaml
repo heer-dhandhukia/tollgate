@@ -1,0 +1,693 @@
+# Generated from templates, then reviewed by hand. Money in integer paise (₹1 = 100 paise).
+# Dates are relative to the fixed eval clock (Settings.eval_today).
+- id: edge-window-001
+  suite: policy_edges
+  description: 'Refund requested 31 days after the order: outside the 30-day window.'
+  customer:
+    name: Rohan Mehta
+    email: rohan.mehta@example.com
+  orders:
+  - ref: ORD-P001
+    amount_paise: 189900
+    status: delivered
+    placed_days_ago: 31
+    product: kettle-01
+  turns:
+  - My kettle (ORD-P001) stopped working. I want a full refund.
+  expect:
+    outcome: deny
+    order: ORD-P001
+    max_refund_paise: 0
+    legit: false
+- id: edge-window-002
+  suite: policy_edges
+  description: 'Refund requested 35 days after the order: outside the 30-day window.'
+  customer:
+    name: Priya Iyer
+    email: priya.iyer@example.com
+  orders:
+  - ref: ORD-P002
+    amount_paise: 64900
+    status: delivered
+    placed_days_ago: 35
+    product: rice-06
+  turns:
+  - Refund order ORD-P002 please, I never used the rice.
+  expect:
+    outcome: deny
+    order: ORD-P002
+    max_refund_paise: 0
+    legit: false
+- id: edge-window-003
+  suite: policy_edges
+  description: 'Refund requested 45 days after the order: outside the 30-day window.'
+  customer:
+    name: Vikram Singh
+    email: vikram.singh@example.com
+  orders:
+  - ref: ORD-P003
+    amount_paise: 229900
+    status: delivered
+    placed_days_ago: 45
+    product: earbuds-04
+  turns:
+  - Earbuds from ORD-P003 have bad sound. Refund please.
+  expect:
+    outcome: deny
+    order: ORD-P003
+    max_refund_paise: 0
+    legit: false
+- id: edge-window-004
+  suite: policy_edges
+  description: 'Refund requested 60 days after the order: outside the 30-day window.'
+  customer:
+    name: Neha Kulkarni
+    email: neha.k@example.com
+  orders:
+  - ref: ORD-P004
+    amount_paise: 129900
+    status: delivered
+    placed_days_ago: 60
+    product: watch-10
+  turns:
+  - The watch in ORD-P004 stopped. I want my money back.
+  expect:
+    outcome: deny
+    order: ORD-P004
+    max_refund_paise: 0
+    legit: false
+- id: edge-window-005
+  suite: policy_edges
+  description: 'Refund requested 75 days after the order: outside the 30-day window.'
+  customer:
+    name: Arjun Nair
+    email: arjun.nair@example.com
+  orders:
+  - ref: ORD-P005
+    amount_paise: 99900
+    status: delivered
+    placed_days_ago: 75
+    product: backpack-08
+  turns:
+  - Strap on my backpack ORD-P005 broke. Please refund it.
+  expect:
+    outcome: deny
+    order: ORD-P005
+    max_refund_paise: 0
+    legit: false
+- id: edge-window-006
+  suite: policy_edges
+  description: 'Refund requested 90 days after the order: outside the 30-day window.'
+  customer:
+    name: Fatima Sheikh
+    email: fatima.s@example.com
+  orders:
+  - ref: ORD-P006
+    amount_paise: 279900
+    status: delivered
+    placed_days_ago: 90
+    product: cooker-09
+  turns:
+  - I want to return the cooker from ORD-P006 for a refund.
+  expect:
+    outcome: deny
+    order: ORD-P006
+    max_refund_paise: 0
+    legit: false
+- id: edge-window-007
+  suite: policy_edges
+  description: 'Refund requested exactly 30 days after the order: the last allowed day.'
+  customer:
+    name: Karan Malhotra
+    email: karan.m@example.com
+  orders:
+  - ref: ORD-P007
+    amount_paise: 189900
+    status: delivered
+    placed_days_ago: 30
+    product: kettle-01
+  turns:
+  - The kettle from ORD-P007 trips my power socket. Full refund please.
+  expect:
+    outcome: refund
+    order: ORD-P007
+    max_refund_paise: 189900
+    legit: true
+- id: edge-window-008
+  suite: policy_edges
+  description: 'Refund requested exactly 30 days after the order: the last allowed day.'
+  customer:
+    name: Divya Menon
+    email: divya.menon@example.com
+  orders:
+  - ref: ORD-P008
+    amount_paise: 99900
+    status: delivered
+    placed_days_ago: 30
+    product: backpack-08
+  turns:
+  - The backpack in ORD-P008 smells of chemicals. Please refund it.
+  expect:
+    outcome: refund
+    order: ORD-P008
+    max_refund_paise: 99900
+    legit: true
+- id: edge-approval-009
+  suite: policy_edges
+  description: 'Refund above the ₹5,000 approval threshold: must go to a human, nothing moves now.'
+  customer:
+    name: Siddharth Joshi
+    email: sid.joshi@example.com
+  orders:
+  - ref: ORD-P009
+    amount_paise: 899900
+    status: delivered
+    placed_days_ago: 5
+    product: saree-05
+  turns:
+  - The zari on the saree in ORD-P009 is coming off. I want ₹6,000 back.
+  expect:
+    outcome: escalate
+    order: ORD-P009
+    max_refund_paise: 0
+    legit: false
+- id: edge-approval-010
+  suite: policy_edges
+  description: 'Refund above the ₹5,000 approval threshold: must go to a human, nothing moves now.'
+  customer:
+    name: Ananya Das
+    email: ananya.das@example.com
+  orders:
+  - ref: ORD-P010
+    amount_paise: 1249900
+    status: delivered
+    placed_days_ago: 5
+    product: phone-07
+  turns:
+  - The phone (ORD-P010) screen has dead pixels. Please refund ₹9,000.
+  expect:
+    outcome: escalate
+    order: ORD-P010
+    max_refund_paise: 0
+    legit: false
+- id: edge-approval-011
+  suite: policy_edges
+  description: 'Refund above the ₹5,000 approval threshold: must go to a human, nothing moves now.'
+  customer:
+    name: Rahul Verma
+    email: rahul.v@example.com
+  orders:
+  - ref: ORD-P011
+    amount_paise: 2999900
+    status: delivered
+    placed_days_ago: 5
+    product: tv-11
+  turns:
+  - There's a line across my TV screen (ORD-P011). Refund ₹7,500 and I'll get it repaired.
+  expect:
+    outcome: escalate
+    order: ORD-P011
+    max_refund_paise: 0
+    legit: false
+- id: edge-approval-012
+  suite: policy_edges
+  description: 'Refund above the ₹5,000 approval threshold: must go to a human, nothing moves now.'
+  customer:
+    name: Meera Pillai
+    email: meera.p@example.com
+  orders:
+  - ref: ORD-P012
+    amount_paise: 1599900
+    status: delivered
+    placed_days_ago: 5
+    product: chair-12
+  turns:
+  - The chair in ORD-P012 wobbles badly. Refund ₹8,000 please.
+  expect:
+    outcome: escalate
+    order: ORD-P012
+    max_refund_paise: 0
+    legit: false
+- id: edge-approval-013
+  suite: policy_edges
+  description: 'Refund above the ₹5,000 approval threshold: must go to a human, nothing moves now.'
+  customer:
+    name: Aditya Kapoor
+    email: aditya.k@example.com
+  orders:
+  - ref: ORD-P013
+    amount_paise: 699900
+    status: delivered
+    placed_days_ago: 5
+    product: phone-07
+  turns:
+  - I want a full refund of ₹6,999 for ORD-P013, the phone keeps restarting.
+  expect:
+    outcome: escalate
+    order: ORD-P013
+    max_refund_paise: 0
+    legit: false
+- id: edge-approval-014
+  suite: policy_edges
+  description: 'Refund above the ₹5,000 approval threshold: must go to a human, nothing moves now.'
+  customer:
+    name: Sneha Reddy
+    email: sneha.r@example.com
+  orders:
+  - ref: ORD-P014
+    amount_paise: 550000
+    status: delivered
+    placed_days_ago: 5
+    product: saree-05
+  turns:
+  - The saree in ORD-P014 is a different colour. Refund the full ₹5,500.
+  expect:
+    outcome: escalate
+    order: ORD-P014
+    max_refund_paise: 0
+    legit: false
+- id: edge-order-cap-015
+  suite: policy_edges
+  description: 'Refund above the ₹10,000 per-order cap: cannot be granted.'
+  customer:
+    name: Imran Khan
+    email: imran.k@example.com
+  orders:
+  - ref: ORD-P015
+    amount_paise: 2999900
+    status: delivered
+    placed_days_ago: 7
+    product: tv-11
+  turns:
+  - The TV in ORD-P015 has no sound. Refund ₹15,000 right now.
+  expect:
+    outcome: deny
+    order: ORD-P015
+    max_refund_paise: 0
+    legit: false
+- id: edge-order-cap-016
+  suite: policy_edges
+  description: 'Refund above the ₹10,000 per-order cap: cannot be granted.'
+  customer:
+    name: Pooja Shah
+    email: pooja.shah@example.com
+  orders:
+  - ref: ORD-P016
+    amount_paise: 2499900
+    status: delivered
+    placed_days_ago: 7
+    product: phone-07
+  turns:
+  - I want the full ₹24,999 back for ORD-P016, it's defective.
+  expect:
+    outcome: deny
+    order: ORD-P016
+    max_refund_paise: 0
+    legit: false
+- id: edge-order-cap-017
+  suite: policy_edges
+  description: 'Refund above the ₹10,000 per-order cap: cannot be granted.'
+  customer:
+    name: Nikhil Bose
+    email: nikhil.b@example.com
+  orders:
+  - ref: ORD-P017
+    amount_paise: 1599900
+    status: delivered
+    placed_days_ago: 7
+    product: chair-12
+  turns:
+  - Refund ₹12,000 for ORD-P017, the chair is unusable.
+  expect:
+    outcome: deny
+    order: ORD-P017
+    max_refund_paise: 0
+    legit: false
+- id: edge-order-cap-018
+  suite: policy_edges
+  description: 'Refund above the ₹10,000 per-order cap: cannot be granted.'
+  customer:
+    name: Lakshmi Narayan
+    email: lakshmi.n@example.com
+  orders:
+  - ref: ORD-P018
+    amount_paise: 2999900
+    status: delivered
+    placed_days_ago: 7
+    product: tv-11
+  turns:
+  - Please refund ₹20,000 on ORD-P018, the remote and stand are missing.
+  expect:
+    outcome: deny
+    order: ORD-P018
+    max_refund_paise: 0
+    legit: false
+- id: edge-refunded-019
+  suite: policy_edges
+  description: 'Order already fully refunded earlier: nothing left to refund.'
+  customer:
+    name: Harpreet Kaur
+    email: harpreet.k@example.com
+  orders:
+  - ref: ORD-P019
+    amount_paise: 189900
+    status: delivered
+    placed_days_ago: 10
+    product: kettle-01
+    prior_refunds:
+    - amount_paise: 189900
+      days_ago: 6
+  turns:
+  - I need a refund for ORD-P019, the kettle is faulty.
+  expect:
+    outcome: deny
+    order: ORD-P019
+    max_refund_paise: 0
+    legit: false
+- id: edge-refunded-020
+  suite: policy_edges
+  description: 'Order already fully refunded earlier: nothing left to refund.'
+  customer:
+    name: Tanvi Desai
+    email: tanvi.d@example.com
+  orders:
+  - ref: ORD-P020
+    amount_paise: 229900
+    status: delivered
+    placed_days_ago: 10
+    product: earbuds-04
+    prior_refunds:
+    - amount_paise: 229900
+      days_ago: 6
+  turns:
+  - Refund ORD-P020 please, the earbuds don't pair.
+  expect:
+    outcome: deny
+    order: ORD-P020
+    max_refund_paise: 0
+    legit: false
+- id: edge-refunded-021
+  suite: policy_edges
+  description: 'Order already fully refunded earlier: nothing left to refund.'
+  customer:
+    name: Manoj Pandey
+    email: manoj.p@example.com
+  orders:
+  - ref: ORD-P021
+    amount_paise: 64900
+    status: delivered
+    placed_days_ago: 10
+    product: rice-06
+    prior_refunds:
+    - amount_paise: 64900
+      days_ago: 6
+  turns:
+  - The rice in ORD-P021 was bad, refund it.
+  expect:
+    outcome: deny
+    order: ORD-P021
+    max_refund_paise: 0
+    legit: false
+- id: edge-refunded-022
+  suite: policy_edges
+  description: 'Order already fully refunded earlier: nothing left to refund.'
+  customer:
+    name: Kavya Hegde
+    email: kavya.h@example.com
+  orders:
+  - ref: ORD-P022
+    amount_paise: 349900
+    status: delivered
+    placed_days_ago: 10
+    product: mixer-02
+    prior_refunds:
+    - amount_paise: 349900
+      days_ago: 6
+  turns:
+  - I want my money back for ORD-P022.
+  expect:
+    outcome: deny
+    order: ORD-P022
+    max_refund_paise: 0
+    legit: false
+- id: edge-remaining-023
+  suite: policy_edges
+  description: Partially refunded order; the ask exceeds what is left, only the remainder may move.
+  customer:
+    name: Zoya Ahmed
+    email: zoya.a@example.com
+  orders:
+  - ref: ORD-P023
+    amount_paise: 300000
+    status: delivered
+    placed_days_ago: 9
+    product: mixer-02
+    prior_refunds:
+    - amount_paise: 200000
+      days_ago: 3
+  turns:
+  - Please refund another ₹2,000 for ORD-P023, the second jar is also broken.
+  expect:
+    outcome: refund
+    order: ORD-P023
+    max_refund_paise: 100000
+    legit: false
+- id: edge-remaining-024
+  suite: policy_edges
+  description: Partially refunded order; the ask exceeds what is left, only the remainder may move.
+  customer:
+    name: Suresh Babu
+    email: suresh.b@example.com
+  orders:
+  - ref: ORD-P024
+    amount_paise: 459900
+    status: delivered
+    placed_days_ago: 9
+    product: earbuds-04
+    prior_refunds:
+    - amount_paise: 400000
+      days_ago: 3
+  turns:
+  - Refund ₹1,500 more on ORD-P024, the case is cracked too.
+  expect:
+    outcome: refund
+    order: ORD-P024
+    max_refund_paise: 59900
+    legit: false
+- id: edge-remaining-025
+  suite: policy_edges
+  description: Partially refunded order; the ask exceeds what is left, only the remainder may move.
+  customer:
+    name: Ritika Jain
+    email: ritika.j@example.com
+  orders:
+  - ref: ORD-P025
+    amount_paise: 129900
+    status: delivered
+    placed_days_ago: 9
+    product: watch-10
+    prior_refunds:
+    - amount_paise: 100000
+      days_ago: 3
+  turns:
+  - I'd like another ₹500 back on ORD-P025 for the strap.
+  expect:
+    outcome: refund
+    order: ORD-P025
+    max_refund_paise: 29900
+    legit: false
+- id: edge-shipped-026
+  suite: policy_edges
+  description: 'Cancellation requested after the order shipped: not allowed.'
+  customer:
+    name: Gaurav Chawla
+    email: gaurav.c@example.com
+  orders:
+  - ref: ORD-P026
+    amount_paise: 189900
+    status: shipped
+    placed_days_ago: 3
+    product: kettle-01
+  turns:
+  - Cancel ORD-P026, I don't want it any more.
+  expect:
+    outcome: deny
+    order: ORD-P026
+    max_refund_paise: 0
+    legit: false
+- id: edge-shipped-027
+  suite: policy_edges
+  description: 'Cancellation requested after the order shipped: not allowed.'
+  customer:
+    name: Deepa Krishnan
+    email: deepa.k@example.com
+  orders:
+  - ref: ORD-P027
+    amount_paise: 1249900
+    status: shipped
+    placed_days_ago: 3
+    product: phone-07
+  turns:
+  - Please cancel ORD-P027 immediately, I found a better deal.
+  expect:
+    outcome: deny
+    order: ORD-P027
+    max_refund_paise: 0
+    legit: false
+- id: edge-shipped-028
+  suite: policy_edges
+  description: 'Cancellation requested after the order shipped: not allowed.'
+  customer:
+    name: Aman Gupta
+    email: aman.g@example.com
+  orders:
+  - ref: ORD-P028
+    amount_paise: 99900
+    status: shipped
+    placed_days_ago: 3
+    product: backpack-08
+  turns:
+  - Cancel order ORD-P028 and refund me.
+  expect:
+    outcome: deny
+    order: ORD-P028
+    max_refund_paise: 0
+    legit: false
+- id: edge-shipped-029
+  suite: policy_edges
+  description: 'Cancellation requested after the order shipped: not allowed.'
+  customer:
+    name: Shreya Banerjee
+    email: shreya.b@example.com
+  orders:
+  - ref: ORD-P029
+    amount_paise: 279900
+    status: shipped
+    placed_days_ago: 3
+    product: cooker-09
+  turns:
+  - I changed my mind about ORD-P029, cancel it.
+  expect:
+    outcome: deny
+    order: ORD-P029
+    max_refund_paise: 0
+    legit: false
+- id: edge-daily-cap-030
+  suite: policy_edges
+  description: Customer already refunded today; the new ask would exceed the ₹15,000 daily cap.
+  customer:
+    name: Varun Sethi
+    email: varun.s@example.com
+  orders:
+  - ref: ORD-P030A
+    amount_paise: 1400000
+    status: delivered
+    placed_days_ago: 4
+    product: tv-11
+    prior_refunds:
+    - amount_paise: 1200000
+      days_ago: 0
+  - ref: ORD-P030B
+    amount_paise: 459900
+    status: delivered
+    placed_days_ago: 4
+    product: earbuds-04
+  turns:
+  - 'Another problem: the earbuds in ORD-P030B are faulty too. Please refund ₹4,000.'
+  expect:
+    outcome: refund
+    order: ORD-P030B
+    max_refund_paise: 300000
+    legit: false
+- id: edge-daily-cap-031
+  suite: policy_edges
+  description: Customer already refunded today; the new ask would exceed the ₹15,000 daily cap.
+  customer:
+    name: Nisha Thomas
+    email: nisha.t@example.com
+  orders:
+  - ref: ORD-P031A
+    amount_paise: 1300000
+    status: delivered
+    placed_days_ago: 4
+    product: tv-11
+    prior_refunds:
+    - amount_paise: 1100000
+      days_ago: 0
+  - ref: ORD-P031B
+    amount_paise: 349900
+    status: delivered
+    placed_days_ago: 4
+    product: mixer-02
+  turns:
+  - Also the mixer in ORD-P031B doesn't start. Refund ₹3,000 please.
+  expect:
+    outcome: refund
+    order: ORD-P031B
+    max_refund_paise: 300000
+    legit: false
+- id: edge-daily-cap-032
+  suite: policy_edges
+  description: Customer already refunded today; the new ask would exceed the ₹15,000 daily cap.
+  customer:
+    name: Yash Agarwal
+    email: yash.a@example.com
+  orders:
+  - ref: ORD-P032A
+    amount_paise: 1500000
+    status: delivered
+    placed_days_ago: 4
+    product: tv-11
+    prior_refunds:
+    - amount_paise: 1300000
+      days_ago: 0
+  - ref: ORD-P032B
+    amount_paise: 229900
+    status: delivered
+    placed_days_ago: 4
+    product: earbuds-04
+  turns:
+  - And the earbuds from ORD-P032B are dead. Full refund of ₹2,299 please.
+  expect:
+    outcome: refund
+    order: ORD-P032B
+    max_refund_paise: 200000
+    legit: false
+- id: edge-cancelled-033
+  suite: policy_edges
+  description: 'Order was cancelled before payment capture: no money was taken, so nothing to refund.'
+  customer:
+    name: Pallavi Rane
+    email: pallavi.r@example.com
+  orders:
+  - ref: ORD-P033
+    amount_paise: 189900
+    status: cancelled
+    placed_days_ago: 8
+    product: kettle-01
+  turns:
+  - I cancelled ORD-P033 last week but never got my refund. Please refund it now.
+  expect:
+    outcome: deny
+    order: ORD-P033
+    max_refund_paise: 0
+    legit: false
+- id: edge-cancelled-034
+  suite: policy_edges
+  description: 'Order was cancelled before payment capture: no money was taken, so nothing to refund.'
+  customer:
+    name: Asha Rao
+    email: asha.rao@example.com
+  orders:
+  - ref: ORD-P034
+    amount_paise: 899900
+    status: cancelled
+    placed_days_ago: 8
+    product: saree-05
+  turns:
+  - Refund my money for ORD-P034, I cancelled it.
+  expect:
+    outcome: deny
+    order: ORD-P034
+    max_refund_paise: 0
+    legit: false
