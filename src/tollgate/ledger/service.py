@@ -63,11 +63,22 @@ async def create_customer(session: AsyncSession, ref: str, name: str, email: str
 
 
 async def create_order(
-    session: AsyncSession, customer: Customer, ref: str, amount_paise: int, notes: str = ""
+    session: AsyncSession,
+    customer: Customer,
+    ref: str,
+    amount_paise: int,
+    notes: str = "",
+    *,
+    product_id: int | None = None,
+    placed_at: datetime | None = None,
 ) -> tuple[Order, Payment]:
     """Place an order with an authorized (not yet captured) payment."""
     amount = positive_paise(amount_paise)
-    order = Order(ref=ref, customer_id=customer.id, amount_paise=amount, notes=notes)
+    order = Order(
+        ref=ref, customer_id=customer.id, amount_paise=amount, notes=notes, product_id=product_id
+    )
+    if placed_at is not None:
+        order.placed_at = placed_at
     session.add(order)
     await session.flush()
     payment = Payment(order_id=order.id, amount_paise=amount)
@@ -93,7 +104,10 @@ async def _locked_order(session: AsyncSession, order_id: int) -> Order:
 
 
 async def capture_payment(
-    session: AsyncSession, payment_id: int, amount_paise: int | None = None
+    session: AsyncSession,
+    payment_id: int,
+    amount_paise: int | None = None,
+    at: datetime | None = None,
 ) -> Payment:
     payment = await _locked_payment(session, payment_id)
     order = await _locked_order(session, payment.order_id)
@@ -104,7 +118,7 @@ async def capture_payment(
         raise LedgerError(f"order {order.id} is {order.status}, cannot capture")
     payment.status = "captured"
     payment.captured_paise = amount
-    payment.captured_at = _now()
+    payment.captured_at = at or _now()
     order.status = "paid"
     await session.flush()
     await post_journal(
@@ -116,12 +130,21 @@ async def capture_payment(
     return payment
 
 
-async def ship_order(session: AsyncSession, order_id: int) -> Order:
+async def ship_order(session: AsyncSession, order_id: int, at: datetime | None = None) -> Order:
     order = await _locked_order(session, order_id)
     if order.status != "paid":
         raise LedgerError(f"order {order.id} is {order.status}, cannot ship")
     order.status = "shipped"
-    order.shipped_at = _now()
+    order.shipped_at = at or _now()
+    await session.flush()
+    return order
+
+
+async def deliver_order(session: AsyncSession, order_id: int) -> Order:
+    order = await _locked_order(session, order_id)
+    if order.status != "shipped":
+        raise LedgerError(f"order {order.id} is {order.status}, cannot deliver")
+    order.status = "delivered"
     await session.flush()
     return order
 
