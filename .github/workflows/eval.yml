@@ -1,0 +1,74 @@
+name: eval
+
+# Manual: Actions → eval → Run workflow. Needs repo secret GROQ_API_KEY (or OPENAI_API_KEY /
+# ANTHROPIC_API_KEY with a matching model). Results and the LLM cache are uploaded as an
+# artifact; fetch with `make fetch-results RUN_ID=<id>`, review, and commit them yourself.
+# Committing the cache lets the next run resume where this one stopped (e.g. after a free-tier
+# daily limit) without repeating any call.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [naive, guarded]
+        default: naive
+      suites:
+        default: "legit,policy_edges"
+      runs:
+        default: "3"
+      model:
+        default: "groq/llama-3.3-70b-versatile"
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: tollgate
+          POSTGRES_PASSWORD: tollgate
+          POSTGRES_DB: tollgate
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U tollgate"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      EVAL_PG_ADMIN_URL: postgresql+asyncpg://tollgate:tollgate@localhost:5432/postgres
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # Inputs go through env, never straight into shell commands.
+      MODE: ${{ inputs.mode }}
+      SUITES: ${{ inputs.suites }}
+      RUNS: ${{ inputs.runs }}
+      TOLLGATE_AGENT_MODEL: ${{ inputs.model }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt -e .
+      - name: Run eval (resumes from committed results and cache)
+        id: run
+        continue-on-error: true
+        run: python -m tollgate.eval run --mode "$MODE" --suites "$SUITES" --runs "$RUNS"
+      - name: Summarise whatever finished
+        run: python -m tollgate.eval summarise --mode "$MODE" --suites "$SUITES" --runs "$RUNS"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-${{ inputs.mode }}-${{ github.run_id }}
+          path: |
+            results/
+            cache/llm/
+          if-no-files-found: error
+      - name: Fail if the run did not complete
+        if: steps.run.outcome != 'success'
+        run: |
+          echo "Eval incomplete (rate limit or failures). Fetch the artifact, commit it, and re-run to resume."
+          exit 1
