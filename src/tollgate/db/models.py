@@ -38,6 +38,16 @@ class Customer(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 
+class Product(Base):
+    __tablename__ = "products"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    sku: Mapped[str] = mapped_column(String(64), unique=True)
+    name: Mapped[str] = mapped_column(Text)
+    # Free text shown to the agent via lookup_order: an injection surface (suite A5).
+    description: Mapped[str] = mapped_column(Text, server_default="")
+
+
 class Order(Base):
     __tablename__ = "orders"
     __table_args__ = (
@@ -52,6 +62,7 @@ class Order(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     ref: Mapped[str] = mapped_column(String(64), unique=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), index=True)
+    product_id: Mapped[int | None] = mapped_column(ForeignKey("products.id"))
     status: Mapped[str] = mapped_column(String(16), server_default="placed")
     amount_paise: Mapped[int]
     notes: Mapped[str] = mapped_column(Text, server_default="")
@@ -124,4 +135,15 @@ class LedgerEntry(Base):
     journal_id: Mapped[int] = mapped_column(ForeignKey("journals.id"), index=True)
     account: Mapped[str] = mapped_column(String(32))
     amount_paise: Mapped[int]
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class Escalation(Base):
+    __tablename__ = "escalations"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), index=True)
+    conversation_id: Mapped[str] = mapped_column(String(128), index=True)
+    order_ref: Mapped[str | None] = mapped_column(String(64))
+    summary: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
