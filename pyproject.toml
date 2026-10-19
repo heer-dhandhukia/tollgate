@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tollgate"
+version = "0.1.0"
+description = "A safety layer for AI agents that move money."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Heer Dhandhukia" }]
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # ₹ and typographic characters in strings/docs are intentional
+
+[tool.ruff.lint.isort]
+known-first-party = ["tollgate", "mockpay"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["db: needs a running Postgres (DATABASE_URL)"]
