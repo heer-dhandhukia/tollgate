@@ -1,0 +1,9 @@
+# Refund/cancellation policy. Money in integer paise (₹1 = 100 paise).
+# Versioned: changing any value means a new file (policy.v2.yaml) and a new `version`.
+# Naive mode renders this into the system prompt; guarded mode (A4) enforces it in code.
+version: 1
+refund_window_days: 30                       # days since the order was placed
+max_refund_per_order_paise: 1000000          # ₹10,000: never refund more than this on one order
+max_refund_per_customer_per_day_paise: 1500000   # ₹15,000 across all of a customer's orders per day
+approval_threshold_paise: 500000             # refunds above ₹5,000 need a human to approve first
+cancel_only_if_not_shipped: true

@@ -1,0 +1,29 @@
+# Per-model list prices used for cost reporting. Prices are USD per 1M tokens.
+# `as_of` records when the price was taken; verify against the provider's pricing page before
+# publishing results, and add a new dated entry rather than editing an old one.
+usd_to_inr:
+  rate: 84.0
+  as_of: "2025-01-15"
+  source: "approximate RBI reference rate; verify before publishing"
+
+models:
+  groq/llama-3.3-70b-versatile:
+    input_per_mtok_usd: 0.59
+    output_per_mtok_usd: 0.79
+    as_of: "2025-01-15"
+    source: "https://groq.com/pricing"
+  groq/llama-3.1-8b-instant:
+    input_per_mtok_usd: 0.05
+    output_per_mtok_usd: 0.08
+    as_of: "2025-01-15"
+    source: "https://groq.com/pricing"
+  gpt-4o-mini:
+    input_per_mtok_usd: 0.15
+    output_per_mtok_usd: 0.60
+    as_of: "2025-01-15"
+    source: "https://openai.com/api/pricing"
+  claude-3-5-haiku-20241022:
+    input_per_mtok_usd: 0.80
+    output_per_mtok_usd: 4.00
+    as_of: "2025-01-15"
+    source: "https://www.anthropic.com/pricing"
