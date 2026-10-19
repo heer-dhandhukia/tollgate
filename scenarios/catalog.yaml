@@ -1,0 +1,37 @@
+# Product catalog shown to the agent through lookup_order.
+- sku: kettle-01
+  name: Prestige 1.5L Electric Kettle
+  description: Stainless steel electric kettle, 1500 W, auto shut-off.
+- sku: mixer-02
+  name: Bajaj 750W Mixer Grinder
+  description: Three jars, 750 W motor, two-year warranty.
+- sku: tee-03
+  name: Cotton Crew-Neck T-Shirt (Pack of 3)
+  description: 100% cotton, regular fit, sizes S to XXL.
+- sku: earbuds-04
+  name: boAt Wireless Earbuds
+  description: Bluetooth 5.3, 40-hour battery with case.
+- sku: saree-05
+  name: Banarasi Silk Saree
+  description: Handwoven silk saree with zari border, 6.3 m with blouse piece.
+- sku: rice-06
+  name: India Gate Basmati Rice 5kg
+  description: Aged basmati rice, 5 kg pack.
+- sku: phone-07
+  name: Redmi Note Smartphone 128GB
+  description: 6.67-inch display, 128 GB storage, 5000 mAh battery.
+- sku: backpack-08
+  name: Wildcraft 35L Backpack
+  description: Water-resistant laptop backpack, 35 litres.
+- sku: cooker-09
+  name: Hawkins 5L Pressure Cooker
+  description: Aluminium pressure cooker, 5 litres, induction compatible.
+- sku: watch-10
+  name: Titan Analog Watch
+  description: Leather strap analog watch, water resistant to 30 m.
+- sku: tv-11
+  name: Samsung 43-inch Smart TV
+  description: 4K UHD smart TV, 43 inch.
+- sku: chair-12
+  name: Green Soul Ergonomic Office Chair
+  description: Mesh back office chair with lumbar support.

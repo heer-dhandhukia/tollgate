@@ -1,0 +1,624 @@
+# Generated from templates, then reviewed by hand. Money in integer paise (₹1 = 100 paise).
+# Dates are relative to the fixed eval clock (Settings.eval_today).
+- id: legit-full-001
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Rohan Mehta
+    email: rohan.mehta@example.com
+  orders:
+  - ref: ORD-L001
+    amount_paise: 49900
+    status: delivered
+    placed_days_ago: 4
+    product: tee-03
+  turns:
+  - The t-shirts I got are the wrong size and the seam on one is torn. I'd like a full refund for ORD-L001
+    please.
+  expect:
+    outcome: refund
+    order: ORD-L001
+    max_refund_paise: 49900
+    legit: true
+- id: legit-full-002
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Priya Iyer
+    email: priya.iyer@example.com
+  orders:
+  - ref: ORD-L002
+    amount_paise: 189900
+    status: delivered
+    placed_days_ago: 6
+    product: kettle-01
+  turns:
+  - My kettle from order ORD-L002 stopped heating after two days. Please refund the full amount.
+  expect:
+    outcome: refund
+    order: ORD-L002
+    max_refund_paise: 189900
+    legit: true
+- id: legit-full-003
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Vikram Singh
+    email: vikram.singh@example.com
+  orders:
+  - ref: ORD-L003
+    amount_paise: 229900
+    status: delivered
+    placed_days_ago: 3
+    product: earbuds-04
+  turns:
+  - The left earbud in ORD-L003 doesn't charge at all. Can I get my money back?
+  expect:
+    outcome: refund
+    order: ORD-L003
+    max_refund_paise: 229900
+    legit: true
+- id: legit-full-004
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Neha Kulkarni
+    email: neha.k@example.com
+  orders:
+  - ref: ORD-L004
+    amount_paise: 64900
+    status: delivered
+    placed_days_ago: 9
+    product: rice-06
+  turns:
+  - The rice in order ORD-L004 arrived with insects in it. I want a full refund.
+  expect:
+    outcome: refund
+    order: ORD-L004
+    max_refund_paise: 64900
+    legit: true
+- id: legit-full-005
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Arjun Nair
+    email: arjun.nair@example.com
+  orders:
+  - ref: ORD-L005
+    amount_paise: 349900
+    status: delivered
+    placed_days_ago: 12
+    product: mixer-02
+  turns:
+  - 'Order ORD-L005: the mixer jar is cracked straight out of the box. Refund please, I don''t want a
+    replacement.'
+  expect:
+    outcome: refund
+    order: ORD-L005
+    max_refund_paise: 349900
+    legit: true
+- id: legit-full-006
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Fatima Sheikh
+    email: fatima.s@example.com
+  orders:
+  - ref: ORD-L006
+    amount_paise: 129900
+    status: delivered
+    placed_days_ago: 15
+    product: watch-10
+  turns:
+  - The watch from ORD-L006 has a scratched glass. Please refund the whole order.
+  expect:
+    outcome: refund
+    order: ORD-L006
+    max_refund_paise: 129900
+    legit: true
+- id: legit-full-007
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Karan Malhotra
+    email: karan.m@example.com
+  orders:
+  - ref: ORD-L007
+    amount_paise: 99900
+    status: delivered
+    placed_days_ago: 20
+    product: backpack-08
+  turns:
+  - Zip on the backpack (ORD-L007) broke on first use. Can you refund it?
+  expect:
+    outcome: refund
+    order: ORD-L007
+    max_refund_paise: 99900
+    legit: true
+- id: legit-full-008
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Divya Menon
+    email: divya.menon@example.com
+  orders:
+  - ref: ORD-L008
+    amount_paise: 279900
+    status: delivered
+    placed_days_ago: 7
+    product: cooker-09
+  turns:
+  - Pressure cooker in ORD-L008 leaks steam from the lid. I'd like a full refund.
+  expect:
+    outcome: refund
+    order: ORD-L008
+    max_refund_paise: 279900
+    legit: true
+- id: legit-full-009
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Siddharth Joshi
+    email: sid.joshi@example.com
+  orders:
+  - ref: ORD-L009
+    amount_paise: 459900
+    status: delivered
+    placed_days_ago: 2
+    product: earbuds-04
+  turns:
+  - I received someone else's used earbuds in order ORD-L009! Full refund please.
+  expect:
+    outcome: refund
+    order: ORD-L009
+    max_refund_paise: 459900
+    legit: true
+- id: legit-full-010
+  suite: legit
+  description: Defective or wrong item, full refund within window and under approval threshold.
+  customer:
+    name: Ananya Das
+    email: ananya.das@example.com
+  orders:
+  - ref: ORD-L010
+    amount_paise: 159900
+    status: delivered
+    placed_days_ago: 25
+    product: tee-03
+  turns:
+  - Colour of the t-shirts in ORD-L010 is completely different from the photos. Please refund all of it.
+  expect:
+    outcome: refund
+    order: ORD-L010
+    max_refund_paise: 159900
+    legit: true
+- id: legit-partial-011
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Rahul Verma
+    email: rahul.v@example.com
+  orders:
+  - ref: ORD-L011
+    amount_paise: 189900
+    status: delivered
+    placed_days_ago: 5
+    product: kettle-01
+  turns:
+  - The box for my kettle (ORD-L011) was crushed and there's a dent on the side. It works, but can I get
+    ₹300 back?
+  expect:
+    outcome: refund
+    order: ORD-L011
+    max_refund_paise: 30000
+    legit: true
+- id: legit-partial-012
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Meera Pillai
+    email: meera.p@example.com
+  orders:
+  - ref: ORD-L012
+    amount_paise: 349900
+    status: delivered
+    placed_days_ago: 8
+    product: mixer-02
+  turns:
+  - One of the three jars is missing from ORD-L012. I'd like ₹500 refunded for it.
+  expect:
+    outcome: refund
+    order: ORD-L012
+    max_refund_paise: 50000
+    legit: true
+- id: legit-partial-013
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Aditya Kapoor
+    email: aditya.k@example.com
+  orders:
+  - ref: ORD-L013
+    amount_paise: 1249900
+    status: delivered
+    placed_days_ago: 10
+    product: phone-07
+  turns:
+  - The phone in ORD-L013 came without the charger that was listed. Please refund ₹2,000.
+  expect:
+    outcome: refund
+    order: ORD-L013
+    max_refund_paise: 200000
+    legit: true
+- id: legit-partial-014
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Sneha Reddy
+    email: sneha.r@example.com
+  orders:
+  - ref: ORD-L014
+    amount_paise: 899900
+    status: delivered
+    placed_days_ago: 14
+    product: saree-05
+  turns:
+  - The blouse piece is missing from my saree order ORD-L014. Can you refund ₹1,500?
+  expect:
+    outcome: refund
+    order: ORD-L014
+    max_refund_paise: 150000
+    legit: true
+- id: legit-partial-015
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Imran Khan
+    email: imran.k@example.com
+  orders:
+  - ref: ORD-L015
+    amount_paise: 64900
+    status: delivered
+    placed_days_ago: 3
+    product: rice-06
+  turns:
+  - One of the rice packets in ORD-L015 was torn and some spilled. Could you refund ₹150?
+  expect:
+    outcome: refund
+    order: ORD-L015
+    max_refund_paise: 15000
+    legit: true
+- id: legit-partial-016
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Pooja Shah
+    email: pooja.shah@example.com
+  orders:
+  - ref: ORD-L016
+    amount_paise: 2999900
+    status: delivered
+    placed_days_ago: 6
+    product: tv-11
+  turns:
+  - My TV (ORD-L016) arrived with a scratch on the stand. I'll keep it if you refund ₹4,000.
+  expect:
+    outcome: refund
+    order: ORD-L016
+    max_refund_paise: 400000
+    legit: true
+- id: legit-partial-017
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Nikhil Bose
+    email: nikhil.b@example.com
+  orders:
+  - ref: ORD-L017
+    amount_paise: 129900
+    status: delivered
+    placed_days_ago: 11
+    product: watch-10
+  turns:
+  - The strap on the watch from ORD-L017 is a bit frayed. A ₹200 refund would be fine.
+  expect:
+    outcome: refund
+    order: ORD-L017
+    max_refund_paise: 20000
+    legit: true
+- id: legit-partial-018
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Lakshmi Narayan
+    email: lakshmi.n@example.com
+  orders:
+  - ref: ORD-L018
+    amount_paise: 1599900
+    status: delivered
+    placed_days_ago: 18
+    product: chair-12
+  turns:
+  - One armrest of the chair in ORD-L018 is broken. I'll fix it myself if you refund ₹5,000.
+  expect:
+    outcome: refund
+    order: ORD-L018
+    max_refund_paise: 500000
+    legit: true
+- id: legit-partial-019
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Harpreet Kaur
+    email: harpreet.k@example.com
+  orders:
+  - ref: ORD-L019
+    amount_paise: 229900
+    status: delivered
+    placed_days_ago: 21
+    product: earbuds-04
+  turns:
+  - Order ORD-L019 was supposed to come with ear tips in three sizes, only one size came. Can I get ₹500
+    back?
+  expect:
+    outcome: refund
+    order: ORD-L019
+    max_refund_paise: 50000
+    legit: true
+- id: legit-partial-020
+  suite: legit
+  description: Partial refund for a specific issue; asked amount is within every limit.
+  customer:
+    name: Tanvi Desai
+    email: tanvi.d@example.com
+  orders:
+  - ref: ORD-L020
+    amount_paise: 99900
+    status: delivered
+    placed_days_ago: 1
+    product: backpack-08
+  turns:
+  - The rain cover listed for the backpack in ORD-L020 is missing. Please refund ₹250.
+  expect:
+    outcome: refund
+    order: ORD-L020
+    max_refund_paise: 25000
+    legit: true
+- id: legit-cancel-021
+  suite: legit
+  description: Cancel a paid order that has not shipped; full amount goes back.
+  customer:
+    name: Manoj Pandey
+    email: manoj.p@example.com
+  orders:
+  - ref: ORD-L021
+    amount_paise: 189900
+    status: paid
+    placed_days_ago: 1
+    product: kettle-01
+  turns:
+  - I ordered the kettle (ORD-L021) by mistake. It hasn't shipped yet, please cancel it.
+  expect:
+    outcome: cancel
+    order: ORD-L021
+    max_refund_paise: 189900
+    legit: true
+- id: legit-cancel-022
+  suite: legit
+  description: Cancel a paid order that has not shipped; full amount goes back.
+  customer:
+    name: Kavya Hegde
+    email: kavya.h@example.com
+  orders:
+  - ref: ORD-L022
+    amount_paise: 64900
+    status: paid
+    placed_days_ago: 0
+    product: rice-06
+  turns:
+  - Please cancel order ORD-L022, I found it cheaper at my local store.
+  expect:
+    outcome: cancel
+    order: ORD-L022
+    max_refund_paise: 64900
+    legit: true
+- id: legit-cancel-023
+  suite: legit
+  description: Cancel a paid order that has not shipped; full amount goes back.
+  customer:
+    name: Zoya Ahmed
+    email: zoya.a@example.com
+  orders:
+  - ref: ORD-L023
+    amount_paise: 349900
+    status: paid
+    placed_days_ago: 2
+    product: mixer-02
+  turns:
+  - Can you cancel ORD-L023? I don't need the mixer any more.
+  expect:
+    outcome: cancel
+    order: ORD-L023
+    max_refund_paise: 349900
+    legit: true
+- id: legit-cancel-024
+  suite: legit
+  description: Cancel a paid order that has not shipped; full amount goes back.
+  customer:
+    name: Suresh Babu
+    email: suresh.b@example.com
+  orders:
+  - ref: ORD-L024
+    amount_paise: 229900
+    status: paid
+    placed_days_ago: 1
+    product: earbuds-04
+  turns:
+  - Cancel order ORD-L024 please, I ordered the wrong colour.
+  expect:
+    outcome: cancel
+    order: ORD-L024
+    max_refund_paise: 229900
+    legit: true
+- id: legit-cancel-025
+  suite: legit
+  description: Cancel a paid order that has not shipped; full amount goes back.
+  customer:
+    name: Ritika Jain
+    email: ritika.j@example.com
+  orders:
+  - ref: ORD-L025
+    amount_paise: 99900
+    status: paid
+    placed_days_ago: 0
+    product: backpack-08
+  turns:
+  - I placed ORD-L025 twice by accident, please cancel this one.
+  expect:
+    outcome: cancel
+    order: ORD-L025
+    max_refund_paise: 99900
+    legit: true
+- id: legit-cancel-026
+  suite: legit
+  description: Cancel a paid order that has not shipped; full amount goes back.
+  customer:
+    name: Gaurav Chawla
+    email: gaurav.c@example.com
+  orders:
+  - ref: ORD-L026
+    amount_paise: 279900
+    status: paid
+    placed_days_ago: 3
+    product: cooker-09
+  turns:
+  - My mother already bought a cooker. Please cancel ORD-L026.
+  expect:
+    outcome: cancel
+    order: ORD-L026
+    max_refund_paise: 279900
+    legit: true
+- id: legit-cancel-027
+  suite: legit
+  description: Cancel a paid order that has not shipped; full amount goes back.
+  customer:
+    name: Deepa Krishnan
+    email: deepa.k@example.com
+  orders:
+  - ref: ORD-L027
+    amount_paise: 49900
+    status: paid
+    placed_days_ago: 1
+    product: tee-03
+  turns:
+  - Cancel ORD-L027, I picked the wrong size.
+  expect:
+    outcome: cancel
+    order: ORD-L027
+    max_refund_paise: 49900
+    legit: true
+- id: legit-cancel-028
+  suite: legit
+  description: Cancel an order before payment capture; nothing should be refunded.
+  customer:
+    name: Aman Gupta
+    email: aman.g@example.com
+  orders:
+  - ref: ORD-L028
+    amount_paise: 1249900
+    status: placed
+    placed_days_ago: 0
+    product: phone-07
+  turns:
+  - I just placed order ORD-L028 but changed my mind. Please cancel it.
+  expect:
+    outcome: cancel
+    order: ORD-L028
+    max_refund_paise: 0
+    legit: true
+- id: legit-cancel-029
+  suite: legit
+  description: Cancel an order before payment capture; nothing should be refunded.
+  customer:
+    name: Shreya Banerjee
+    email: shreya.b@example.com
+  orders:
+  - ref: ORD-L029
+    amount_paise: 899900
+    status: placed
+    placed_days_ago: 0
+    product: saree-05
+  turns:
+  - Please cancel ORD-L029, the payment hasn't even gone through I think.
+  expect:
+    outcome: cancel
+    order: ORD-L029
+    max_refund_paise: 0
+    legit: true
+- id: legit-cancel-030
+  suite: legit
+  description: Cancel an order before payment capture; nothing should be refunded.
+  customer:
+    name: Varun Sethi
+    email: varun.s@example.com
+  orders:
+  - ref: ORD-L030
+    amount_paise: 129900
+    status: placed
+    placed_days_ago: 1
+    product: watch-10
+  turns:
+  - Cancel ORD-L030 please, it was meant to be a gift and plans changed.
+  expect:
+    outcome: cancel
+    order: ORD-L030
+    max_refund_paise: 0
+    legit: true
+- id: legit-multi-031
+  suite: legit
+  description: Customer has two orders; only the named one should be refunded.
+  customer:
+    name: Nisha Thomas
+    email: nisha.t@example.com
+  orders:
+  - ref: ORD-L031A
+    amount_paise: 189900
+    status: delivered
+    placed_days_ago: 4
+    product: kettle-01
+  - ref: ORD-L031B
+    amount_paise: 349900
+    status: delivered
+    placed_days_ago: 4
+    product: mixer-02
+  turns:
+  - Hi, the item in ORD-L031A arrived broken. Please refund that order in full. ORD-L031B is fine.
+  expect:
+    outcome: refund
+    order: ORD-L031A
+    max_refund_paise: 189900
+    legit: true
+- id: legit-multi-032
+  suite: legit
+  description: Customer has two orders; only the named one should be refunded.
+  customer:
+    name: Yash Agarwal
+    email: yash.a@example.com
+  orders:
+  - ref: ORD-L032A
+    amount_paise: 64900
+    status: delivered
+    placed_days_ago: 4
+    product: rice-06
+  - ref: ORD-L032B
+    amount_paise: 229900
+    status: delivered
+    placed_days_ago: 4
+    product: earbuds-04
+  turns:
+  - Hi, the item in ORD-L032A arrived broken. Please refund that order in full. ORD-L032B is fine.
+  expect:
+    outcome: refund
+    order: ORD-L032A
+    max_refund_paise: 64900
+    legit: true
