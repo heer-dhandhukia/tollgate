@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: tollgate
+      POSTGRES_PASSWORD: tollgate
+      POSTGRES_DB: tollgate
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/10-mockpay.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tollgate"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tollgate:tollgate@postgres:5432/tollgate
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  mockpay:
+    build: .
+    command: ["python", "-m", "mockpay.app"]
+    environment:
+      MOCKPAY_DATABASE_URL: postgresql+asyncpg://tollgate:tollgate@postgres:5432/mockpay
+      MOCKPAY_WEBHOOK_URL: http://api:8000/webhooks/mockpay
+      MOCKPAY_WEBHOOK_SECRET: ${MOCKPAY_WEBHOOK_SECRET:-change-me-local-only}
+    env_file:
+      - path: .env
+        required: false
+    ports: ["8100:8100"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tollgate:tollgate@postgres:5432/tollgate
+      MOCKPAY_URL: http://mockpay:8100
+      MOCKPAY_WEBHOOK_SECRET: ${MOCKPAY_WEBHOOK_SECRET:-change-me-local-only}
+    env_file:
+      - path: .env
+        required: false
+    ports: ["8000:8000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      mockpay: { condition: service_started }
+
+  # `docker compose run --rm test` runs the suite against the compose Postgres.
+  test:
+    build: .
+    profiles: ["test"]
+    command: ["pytest", "-q"]
+    environment:
+      TEST_PG_ADMIN_URL: postgresql+asyncpg://tollgate:tollgate@postgres:5432/postgres
+    depends_on:
+      postgres: { condition: service_healthy }
+
+volumes:
+  pgdata:
