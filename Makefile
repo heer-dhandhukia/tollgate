@@ -1,8 +1,11 @@
 PYTHON ?= python3.11
+SUITES ?= legit,policy_edges
+RUNS   ?= 3
 VENV   ?= .venv
 BIN    := $(VENV)/bin
 
-.PHONY: help venv install lint fmt test test-docker up down logs migrate check-secrets clean
+.PHONY: help venv install lint fmt test test-docker up down logs migrate check-secrets clean \
+	eval-naive summarise-naive report fetch-results
 
 help:  ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -41,6 +44,22 @@ migrate:  ## apply database migrations locally
 
 check-secrets:  ## refuse staged .env files or API-key-looking strings
 	./scripts/check_staged_secrets.sh
+
+eval-naive:  ## run the naive agent over SUITES x RUNS (resumable; needs an LLM key + Postgres)
+	$(BIN)/python -m tollgate.eval run --mode naive --suites $(SUITES) --runs $(RUNS)
+
+summarise-naive:  ## rebuild results/eval_naive.json from per-scenario results
+	$(BIN)/python -m tollgate.eval summarise --mode naive --suites $(SUITES) --runs $(RUNS)
+
+report:  ## regenerate README results tables from results/*.json
+	$(BIN)/python -m tollgate.eval report
+
+fetch-results:  ## download an eval workflow artifact into results/ and cache/ (RUN_ID=...)
+	rm -rf .eval-download
+	gh run download $(RUN_ID) -D .eval-download
+	cp -R .eval-download/*/results/. results/
+	mkdir -p cache/llm && cp -R .eval-download/*/cache/llm/. cache/llm/
+	rm -rf .eval-download
 
 clean:
 	rm -rf $(VENV) .pytest_cache .ruff_cache .hypothesis

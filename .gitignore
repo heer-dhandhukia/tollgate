@@ -83,5 +83,5 @@ dmypy.json
 # Claude Code local settings (shared settings.json is committed)
 .claude/settings.local.json
 
-# Tollgate: LLM response cache is local; results/*.json are committed
-.llm_cache/
+# Tollgate: cache/llm/ and results/ are committed on purpose (replayable evals)
+.eval-download/
