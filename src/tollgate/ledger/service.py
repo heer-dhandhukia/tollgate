@@ -176,12 +176,15 @@ async def reserve_refund(
     amount_paise: int,
     idempotency_key: str,
     reason: str = "",
+    at: datetime | None = None,
 ) -> Refund:
     """Create a pending refund. The DB trigger reserves it against the captured amount."""
     amount = positive_paise(amount_paise)
     refund = Refund(
         payment_id=payment_id, amount_paise=amount, idempotency_key=idempotency_key, reason=reason
     )
+    if at is not None:
+        refund.created_at = at
     session.add(refund)
     await session.flush()
     await post_journal(
