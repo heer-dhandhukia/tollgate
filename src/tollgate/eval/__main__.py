@@ -23,7 +23,7 @@ def main(argv: list[str] | None = None) -> int:
     for name in ("run", "summarise"):
         p = sub.add_parser(name)
         p.add_argument("--mode", required=True, choices=["naive", "guarded"])
-        p.add_argument("--suites", default="legit,policy_edges")
+        p.add_argument("--suites", default="legit,policy_edges,chaos")
         p.add_argument("--runs", type=int, default=3)
     sub.add_parser("report")
     args = parser.parse_args(argv)

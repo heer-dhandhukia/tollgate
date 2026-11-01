@@ -6,8 +6,10 @@ single-row CHECK constraints so `metadata` matches the migrated schema.
 """
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import CheckConstraint, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tollgate.db.base import Base
@@ -15,6 +17,19 @@ from tollgate.db.base import Base
 ORDER_STATUSES = ("placed", "paid", "shipped", "delivered", "cancelled")
 PAYMENT_STATUSES = ("authorized", "captured", "voided")
 REFUND_STATUSES = ("pending", "succeeded", "failed")
+INTENT_STATUSES = (
+    "proposed",
+    "denied",
+    "awaiting_approval",
+    "rejected",
+    "executing",
+    "succeeded",
+    "failed",
+    "unknown",
+)
+# Intents that may still turn into money at the provider. At most one per order (migration 0004).
+IN_FLIGHT = ("executing", "unknown")
+FINAL = ("denied", "rejected", "succeeded", "failed")
 
 # Double-entry accounts. Signed amounts: debit > 0, credit < 0; every journal sums to 0.
 PROVIDER_CLEARING = "provider_clearing"  # asset: money held for us at the payment provider
@@ -44,7 +59,7 @@ class Product(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     sku: Mapped[str] = mapped_column(String(64), unique=True)
     name: Mapped[str] = mapped_column(Text)
-    # Free text shown to the agent via lookup_order: an injection surface (suite A5).
+    # Free text shown to the agent via lookup_order: an injection surface (no suite yet).
     description: Mapped[str] = mapped_column(Text, server_default="")
 
 
@@ -147,3 +162,66 @@ class Escalation(Base):
     order_ref: Mapped[str | None] = mapped_column(String(64))
     summary: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class RefundIntent(Base):
+    """One refund the agent (or a cancellation) asked for. Only the executor acts on it.
+
+    The id is derived from (conversation, kind, order, amount), so the model repeating the same
+    request in one conversation finds the same intent instead of creating a second refund."""
+
+    __tablename__ = "refund_intents"
+    __table_args__ = (
+        CheckConstraint("kind IN ('refund', 'cancel')", name="kind_valid"),
+        CheckConstraint("amount_paise > 0", name="amount_positive"),
+        CheckConstraint(_in("status", INTENT_STATUSES), name="status_valid"),
+        CheckConstraint(
+            "status NOT IN ('executing', 'succeeded', 'unknown') OR refund_id IS NOT NULL",
+            name="reserved_before_execution",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(String(128), index=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"))
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"))
+    kind: Mapped[str] = mapped_column(String(16))
+    amount_paise: Mapped[int]
+    reason: Mapped[str] = mapped_column(Text, server_default="")
+    status: Mapped[str] = mapped_column(String(24), server_default="proposed", index=True)
+    policy_rule: Mapped[str | None] = mapped_column(String(64))
+    decision_note: Mapped[str] = mapped_column(Text, server_default="")
+    decided_by: Mapped[str | None] = mapped_column(String(64))
+    refund_id: Mapped[int | None] = mapped_column(ForeignKey("refunds.id"), unique=True)
+    provider_refund_id: Mapped[str | None] = mapped_column(String(64))
+    attempts: Mapped[int] = mapped_column(server_default="0")
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class AuditLog(Base):
+    """Append-only record of every decision: who (agent, policy, executor, a named human,
+    webhook, reconciler), what, and on which intent."""
+
+    __tablename__ = "audit_log"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    at: Mapped[datetime] = mapped_column(server_default=func.now())
+    actor: Mapped[str] = mapped_column(String(64))
+    action: Mapped[str] = mapped_column(String(64))
+    intent_id: Mapped[str | None] = mapped_column(String(40), index=True)
+    conversation_id: Mapped[str | None] = mapped_column(String(128), index=True)
+    details: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
+
+
+class WebhookEvent(Base):
+    """Provider events already received, keyed by the provider's event id (dedupe)."""
+
+    __tablename__ = "webhook_events"
+
+    event_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    type: Mapped[str] = mapped_column(String(64))
+    sequence: Mapped[int]
+    provider_refund_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    outcome: Mapped[str] = mapped_column(String(32))
+    received_at: Mapped[datetime] = mapped_column(server_default=func.now())

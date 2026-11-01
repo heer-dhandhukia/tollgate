@@ -102,7 +102,9 @@ async def test_rerun_skips_finished_and_replays_from_cache(tmp_path: Path) -> No
 
 async def test_naive_retry_after_lost_response_refunds_twice(tmp_path: Path) -> None:
     """error_after_commit: the refund happened but the agent saw an error and retried."""
-    base = pick("legit-full-002")["legit"][0]
+    # A partial refund: mockpay (like real providers) refuses refunds beyond the captured
+    # amount, so a repeated *full* refund would be rejected. A repeated partial one goes through.
+    base = pick("legit-partial-011")["legit"][0]
     scenario = base.model_copy(update={"faults": ["error_after_commit"]})
     ref = scenario.expect.order
     amount = scenario.expect.max_refund_paise

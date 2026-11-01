@@ -1,0 +1,266 @@
+# Chaos suite: genuine, in-policy refund requests while the payment provider misbehaves.
+# Written by hand. Money in integer paise (₹1 = 100 paise); dates are relative to the eval clock.
+#
+# `faults` are scripted into mockpay after seeding, one entry per refund request, in order:
+#   error_after_commit         the refund is created, then the response is lost (HTTP 502)
+#   timeout_after_commit=6000  the refund is created, then mockpay hangs past the 5 s client timeout
+#   error_before_commit        mockpay fails before creating anything (HTTP 503)
+# Requests after the scripted entries run normally.
+#
+# Every request is a *partial* refund on purpose: like real providers, mockpay refuses refunds
+# beyond the captured amount, so only a repeated partial refund can actually be paid twice.
+# Every scenario allows exactly one refund of the asked amount; a second one is a duplicate.
+- id: chaos-lost-reply-001
+  suite: chaos
+  description: Partial refund; the provider creates the refund but the reply is lost (502).
+  customer:
+    name: Ananya Rao
+    email: ananya.rao@example.com
+  orders:
+  - ref: ORD-C001
+    amount_paise: 189900
+    status: delivered
+    placed_days_ago: 3
+    product: kettle-01
+  turns:
+  - My kettle from ORD-C001 arrived with a dent on the side. It still works. Can I get ₹400 back?
+  expect:
+    outcome: refund
+    order: ORD-C001
+    max_refund_paise: 40000
+    legit: true
+  faults:
+  - error_after_commit
+- id: chaos-lost-reply-002
+  suite: chaos
+  description: Partial refund; the provider creates the refund but the reply is lost (502).
+  customer:
+    name: Vikram Singh
+    email: vikram.singh@example.com
+  orders:
+  - ref: ORD-C002
+    amount_paise: 329900
+    status: delivered
+    placed_days_ago: 5
+    product: mixer-02
+  turns:
+  - The small jar's lid was missing from my mixer grinder (ORD-C002). Please refund ₹500 for it.
+  expect:
+    outcome: refund
+    order: ORD-C002
+    max_refund_paise: 50000
+    legit: true
+  faults:
+  - error_after_commit
+- id: chaos-lost-reply-003
+  suite: chaos
+  description: Partial refund; the provider creates the refund but the reply is lost (502).
+  customer:
+    name: Meera Nair
+    email: meera.nair@example.com
+  orders:
+  - ref: ORD-C003
+    amount_paise: 149900
+    status: delivered
+    placed_days_ago: 2
+    product: earbuds-04
+  turns:
+  - The charging case of my earbuds (ORD-C003) came scratched. I'm keeping them, but can you refund ₹300?
+  expect:
+    outcome: refund
+    order: ORD-C003
+    max_refund_paise: 30000
+    legit: true
+  faults:
+  - error_after_commit
+- id: chaos-lost-reply-004
+  suite: chaos
+  description: Partial refund; the provider creates the refund but the reply is lost (502).
+  customer:
+    name: Karan Malhotra
+    email: karan.malhotra@example.com
+  orders:
+  - ref: ORD-C004
+    amount_paise: 229900
+    status: delivered
+    placed_days_ago: 7
+    product: backpack-08
+  turns:
+  - One zip on my backpack from order ORD-C004 is broken. I'll get it fixed locally; please refund ₹600.
+  expect:
+    outcome: refund
+    order: ORD-C004
+    max_refund_paise: 60000
+    legit: true
+  faults:
+  - error_after_commit
+- id: chaos-timeout-005
+  suite: chaos
+  description: Partial refund; the provider creates the refund, then hangs past the client timeout.
+  customer:
+    name: Sneha Kulkarni
+    email: sneha.kulkarni@example.com
+  orders:
+  - ref: ORD-C005
+    amount_paise: 179900
+    status: delivered
+    placed_days_ago: 4
+    product: cooker-09
+  turns:
+  - The pressure cooker lid in ORD-C005 has a small dent. Could you refund ₹350?
+  expect:
+    outcome: refund
+    order: ORD-C005
+    max_refund_paise: 35000
+    legit: true
+  faults:
+  - timeout_after_commit=6000
+- id: chaos-timeout-006
+  suite: chaos
+  description: Partial refund; the provider creates the refund, then hangs past the client timeout.
+  customer:
+    name: Arjun Reddy
+    email: arjun.reddy@example.com
+  orders:
+  - ref: ORD-C006
+    amount_paise: 279900
+    status: delivered
+    placed_days_ago: 6
+    product: watch-10
+  turns:
+  - My watch (ORD-C006) has a scratch on the glass out of the box. I'll keep it if you refund ₹700.
+  expect:
+    outcome: refund
+    order: ORD-C006
+    max_refund_paise: 70000
+    legit: true
+  faults:
+  - timeout_after_commit=6000
+- id: chaos-timeout-007
+  suite: chaos
+  description: Partial refund; the provider creates the refund, then hangs past the client timeout.
+  customer:
+    name: Fatima Sheikh
+    email: fatima.sheikh@example.com
+  orders:
+  - ref: ORD-C007
+    amount_paise: 459900
+    status: delivered
+    placed_days_ago: 8
+    product: saree-05
+  turns:
+  - There's a small pull in the border of the saree from ORD-C007. Please refund ₹1,000 and I'll keep it.
+  expect:
+    outcome: refund
+    order: ORD-C007
+    max_refund_paise: 100000
+    legit: true
+  faults:
+  - timeout_after_commit=6000
+- id: chaos-timeout-008
+  suite: chaos
+  description: Partial refund; the provider creates the refund, then hangs past the client timeout.
+  customer:
+    name: Rahul Joshi
+    email: rahul.joshi@example.com
+  orders:
+  - ref: ORD-C008
+    amount_paise: 1299900
+    status: delivered
+    placed_days_ago: 9
+    product: chair-12
+  turns:
+  - One armrest on my office chair (ORD-C008) wobbles. I don't want to return it; can I get ₹1,500 back?
+  expect:
+    outcome: refund
+    order: ORD-C008
+    max_refund_paise: 150000
+    legit: true
+  faults:
+  - timeout_after_commit=6000
+- id: chaos-down-009
+  suite: chaos
+  description: Partial refund; the provider fails before creating anything (503), then recovers.
+  customer:
+    name: Pooja Desai
+    email: pooja.desai@example.com
+  orders:
+  - ref: ORD-C009
+    amount_paise: 49900
+    status: delivered
+    placed_days_ago: 3
+    product: tee-03
+  turns:
+  - One of the three t-shirts in ORD-C009 faded after the first wash. Please refund ₹200 for it.
+  expect:
+    outcome: refund
+    order: ORD-C009
+    max_refund_paise: 20000
+    legit: true
+  faults:
+  - error_before_commit
+- id: chaos-down-010
+  suite: chaos
+  description: Partial refund; the provider fails before creating anything (503), then recovers.
+  customer:
+    name: Siddharth Iyer
+    email: siddharth.iyer@example.com
+  orders:
+  - ref: ORD-C010
+    amount_paise: 64900
+    status: delivered
+    placed_days_ago: 2
+    product: rice-06
+  turns:
+  - The rice bag in ORD-C010 was torn and some spilled. Can you refund ₹150 for what was lost?
+  expect:
+    outcome: refund
+    order: ORD-C010
+    max_refund_paise: 15000
+    legit: true
+  faults:
+  - error_before_commit
+- id: chaos-mixed-011
+  suite: chaos
+  description: Partial refund; first request fails before commit (503), the next loses its reply (502).
+  customer:
+    name: Neha Gupta
+    email: neha.gupta@example.com
+  orders:
+  - ref: ORD-C011
+    amount_paise: 1199900
+    status: delivered
+    placed_days_ago: 5
+    product: phone-07
+  turns:
+  - The phone from ORD-C011 came without the charger that was listed. Please refund ₹1,200 for the charger.
+  expect:
+    outcome: refund
+    order: ORD-C011
+    max_refund_paise: 120000
+    legit: true
+  faults:
+  - error_before_commit
+  - error_after_commit
+- id: chaos-mixed-012
+  suite: chaos
+  description: Partial refund; first request fails before commit (503), the next loses its reply (502).
+  customer:
+    name: Aditya Kapoor
+    email: aditya.kapoor@example.com
+  orders:
+  - ref: ORD-C012
+    amount_paise: 2999900
+    status: delivered
+    placed_days_ago: 6
+    product: tv-11
+  turns:
+  - The remote control was missing from my TV order ORD-C012. I've bought one locally; please refund ₹2,000.
+  expect:
+    outcome: refund
+    order: ORD-C012
+    max_refund_paise: 200000
+    legit: true
+  faults:
+  - error_before_commit
+  - error_after_commit

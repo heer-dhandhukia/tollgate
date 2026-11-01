@@ -1,7 +1,6 @@
 # Tollgate — design decisions
 
-Each section lists the options considered, what was chosen, and the trade-off. Sections marked
-*(planned)* are written in the phase that builds them.
+Each section lists the options considered, what was chosen, and the trade-off.
 
 ---
 
@@ -112,8 +111,8 @@ refund. That is how the naive agent gets hurt.
 
 **Reconciliation lookup.** Refunds carry a merchant `receipt` (as in Razorpay), and
 `GET /v1/refunds?receipt=` finds them. The plan said lookup by idempotency key; real providers
-don't expose keys for lookup, so the receipt is the realistic handle. A3's executor will set
-`receipt` to the intent id.
+don't expose keys for lookup, so the receipt is the realistic handle. The executor sets
+`receipt` to the intent id (§19).
 
 ## 8. Fault injection
 
@@ -133,8 +132,8 @@ HMAC-SHA256 signature over the raw body (`X-Mockpay-Signature`), a unique event 
 monotonically increasing `sequence`. Delivery is at-least-once with retries. Faults:
 `duplicate_webhook=n` delivers each event n times; `out_of_order_webhooks` holds a refund's events
 and releases them newest-first once the terminal event exists, so `refund.processed` arrives
-before `refund.created`. The receiver (A3) must dedupe by event id and must not let a stale event
-move state backwards.
+before `refund.created`. The receiver dedupes by event id and never lets a stale event
+move state backwards (§24).
 
 ## 10. How the invariants are tested
 
@@ -159,7 +158,7 @@ guarded mode. It differs in exactly these ways (`src/tollgate/naive/backend.py`)
 
 1. `issue_refund` / `cancel_order` call the provider **directly, with no Idempotency-Key**.
 2. The policy exists **only in the system prompt** (rendered from `config/policy.v1.yaml`, the same
-   file the A4 policy engine will enforce). No code checks amounts, windows or limits.
+   file the guarded policy engine enforces, §22). No code checks amounts, windows or limits.
 3. Refund/cancel look orders up by id without re-checking ownership. `lookup_order` is scoped to
    the signed-in customer: identity comes from the session in both modes, per the spec.
 4. External call first, ledger second, best effort. When the ledger's own triggers refuse (e.g.
@@ -239,10 +238,97 @@ reviews and commits them, which keeps authorship and provenance clear.
 
 ---
 
-## Planned sections
+## 18. Money can't be moved from the LLM layer
 
-- *(A3)* Why money can't be moved from the LLM layer
-- *(A3)* Why exactly-once is impossible, and how idempotency + reconciliation gives effectively-once
-- *(A3)* Why an `UNKNOWN` state exists
-- *(A3)* Locking strategy for intents
-- *(A4)* Why policy lives outside the prompt
+**Options.** (a) Let the refund tool call the provider and add checks around it. (b) Make the tools
+*request* an action and give one component, the executor, the only provider client that can move
+money.
+**Chosen.** (b). In guarded mode `issue_refund` and `cancel_order` call
+`Executor.request_refund` / `request_cancel` (`src/tollgate/guarded/`). Nothing else in guarded
+mode calls `create_refund`.
+**Why.** Checks wrapped around many call sites drift apart; one choke point can be reasoned about
+and tested once. The same executor serves the agent, the approval CLI and reconciliation.
+**Cost.** Every money path pays the executor's latency (a row lock, a transaction, an audit row).
+
+## 19. Exactly-once is impossible; effectively-once is the goal
+
+A network call can succeed and still look like a failure (`error_after_commit`,
+`timeout_after_commit`). No client can tell "never happened" from "happened, reply lost" without
+asking again. So:
+
+1. Every provider call carries `Idempotency-Key` = intent id and `receipt` = intent id.
+2. Timeouts, 5xx, 409 and 429 are retried (up to 3 attempts) with the **same** key. A retry after
+   a lost reply gets the stored response replayed: one refund.
+3. When attempts run out, the refund is looked up by receipt. Found → `succeeded`. Not found →
+   `failed`, and the ledger reservation is released.
+4. If even the lookup fails, the intent becomes **`unknown`**: never retried automatically, an
+   escalation is opened, and `Executor.reconcile()` resolves it later.
+
+`unknown` exists because guessing in either direction is wrong: "succeeded" may report money that
+never moved, "failed" invites a retry that pays twice. **Cost:** a customer may wait for a human.
+**Known gap:** "not found by receipt" is treated as "never happened". A provider that was still
+processing the request could commit it later; a production system would wait out the provider's
+in-flight window first.
+
+## 20. The intent id is a fingerprint of the request
+
+`int_` + sha256(conversation, kind, order, amount)[:24]. The same request in the same
+conversation maps to the same intent, so a model that repeats itself (or two concurrent calls)
+gets the first result back (`already_done` / `already_in_progress`) instead of a second refund.
+**Cost.** Two genuinely separate, identical refunds on one order in one conversation merge into
+one; the agent has to ask for the combined amount. We accept that: it fails safe.
+
+## 21. Locking: customer, then order, then payment
+
+Each decision locks the customer row, then the order, then its payment (`SELECT … FOR UPDATE`,
+always in that order, so concurrent requests can't deadlock). Locking the customer makes the daily
+cap, which spans all of a customer's orders, race-free. Two more backstops:
+
+- a partial unique index allows at most one `executing`/`unknown` intent per order;
+- the ledger's own `refunded ≤ captured` check refuses any reservation that slipped through.
+
+`test_concurrent_identical_requests_pay_once` and
+`test_concurrent_different_requests_never_exceed_what_was_paid` fire requests in parallel.
+**Cost.** One customer's money actions are serialised. That's the contention we want.
+
+## 22. Policy lives outside the prompt
+
+`src/tollgate/guarded/policy.py` evaluates `config/policy.v1.yaml`, the same file naive mode puts in
+its prompt. Rules run in a fixed order (ownership, cancel-after-shipping, nothing captured,
+refundable amount, window, per-order cap, daily cap, approval threshold) and the first failure
+decides. It is a pure function of facts read under the lock, so every rule is unit-tested without
+a database.
+
+- Denials about an amount return `max_allowed_paise`, so the agent can offer what policy allows
+  rather than a flat no (this is what keeps false denials down).
+- Cancellations of paid orders return money through the same rules: there is one way to return
+  money (§5).
+- An approval re-runs the policy minus the approval rule: limits may have been used up while the
+  request waited.
+
+## 23. Approval queue and audit log
+
+Refunds above the threshold become `awaiting_approval` intents and open an escalation. A named
+person approves or rejects with `python -m tollgate.approvals`; the decision is recorded as
+`human:<name>`. Every step (agent request, policy decision, reservation, provider outcome,
+reconciliation, human decision, webhook) is a row in `audit_log`, which Postgres makes
+append-only like the ledger. Intent status transitions are one-way and enforced by a trigger.
+
+## 24. Webhooks
+
+The receiver verifies HMAC-SHA256 over the raw body, inserts the event id with
+`ON CONFLICT DO NOTHING` (a duplicate does nothing), and maps events onto ledger operations that
+are themselves idempotent. Order is not trusted: `refund.created` after `refund.processed` is
+recorded as `ignored_stale`. A conflicting event (e.g. `processed` for a refund already failed) is
+recorded as `conflict` in the audit log and left for a human, never applied backwards.
+
+## 25. What "guarded" changes, exactly
+
+Guarded mode uses the same model, tools, tool schemas, argument validation and session as naive
+mode (§12). It differs in the five points of §12 and in one prompt paragraph telling the model that
+the tools enforce the policy and may answer "denied", "waiting for approval" or "already done".
+Without that paragraph the model has no way to interpret those answers; it does not weaken the
+naive baseline.
+
+Planned next: a prompt-injection suite (product descriptions are already an injection surface,
+`products.description`), multi-turn scenarios, and the naive-vs-guarded results.

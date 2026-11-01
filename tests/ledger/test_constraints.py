@@ -145,12 +145,19 @@ async def test_capture_after_cancel_rejected(maker: Maker) -> None:
     order_id, pid = await new_order(maker, 5_000)
     async with maker() as s, s.begin():
         await service.cancel_order(s, order_id)
-    # Even un-voiding the payment and capturing in one statement is refused.
+    # Un-voiding the payment is refused...
+    await assert_rejected(
+        maker,
+        "UPDATE payments SET status = 'captured' WHERE id = :p",
+        {"p": pid},
+        "illegal payment transition",
+    )
+    # ...and so is un-voiding and capturing in one statement (the amount guard fires first).
     await assert_rejected(
         maker,
         "UPDATE payments SET status = 'captured', captured_paise = 5000 WHERE id = :p",
         {"p": pid},
-        "illegal payment transition",
+        "capture amount is fixed",
     )
 
 
