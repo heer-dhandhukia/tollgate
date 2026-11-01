@@ -34,6 +34,7 @@ from tollgate.eval.sandbox import Sandboxes
 from tollgate.eval.scenario import Product, Scenario, sandbox_name
 from tollgate.eval.score import ConversationStats, ProviderRefund, ScenarioScore, score
 from tollgate.eval.seed import SEED_RECEIPT_PREFIX, Seeded, seed
+from tollgate.guarded.backend import GuardedBackend
 from tollgate.llm.client import LLMClient, LLMUnavailable
 from tollgate.naive.backend import NaiveBackend
 from tollgate.policy_config import PolicyConfig
@@ -44,10 +45,38 @@ log = logging.getLogger("tollgate.eval")
 PROMPT_VERSION = "v1"
 
 BackendFactory = Callable[
-    [AuthenticatedSession, async_sessionmaker[AsyncSession], ProviderClient, FixedClock],
+    [
+        AuthenticatedSession,
+        async_sessionmaker[AsyncSession],
+        ProviderClient,
+        FixedClock,
+        PolicyConfig,
+    ],
     ToolBackend,
 ]
-BACKENDS: dict[str, BackendFactory] = {"naive": NaiveBackend}
+
+
+def _naive(
+    session: AuthenticatedSession,
+    maker: async_sessionmaker[AsyncSession],
+    provider: ProviderClient,
+    clock: FixedClock,
+    policy: PolicyConfig,
+) -> ToolBackend:
+    return NaiveBackend(session, maker, provider, clock)  # policy lives only in its prompt
+
+
+def _guarded(
+    session: AuthenticatedSession,
+    maker: async_sessionmaker[AsyncSession],
+    provider: ProviderClient,
+    clock: FixedClock,
+    policy: PolicyConfig,
+) -> ToolBackend:
+    return GuardedBackend(session, maker, provider, clock, policy)
+
+
+BACKENDS: dict[str, BackendFactory] = {"naive": _naive, "guarded": _guarded}
 
 # mockpay must behave deterministically inside evals: no random faults, no background sweeper.
 QUIET_PROVIDER = {
@@ -170,7 +199,9 @@ class EvalRunner:
                         await provider_state.settle_due()  # seeded refunds settle first
                         if scenario.faults:
                             provider_state.faults.script(scenario.faults)
-                        backend = BACKENDS[mode](seeded.session, maker, provider, self.clock)
+                        backend = BACKENDS[mode](
+                            seeded.session, maker, provider, self.clock, self.policy
+                        )
                         prompt = system_prompt(
                             mode, PROMPT_VERSION, seeded.session, self.policy, self.clock.today()
                         )
@@ -183,6 +214,9 @@ class EvalRunner:
                             run_index=run_index,
                         )
                         await provider_state.settle_due()
+                        if isinstance(backend, GuardedBackend):
+                            # No webhooks inside evals: reconciliation settles the ledger.
+                            await backend.executor.reconcile()
                         refunds = await self._provider_refunds(provider_state, scenario, seeded)
                     statuses, escalated = await self._ledger_state(maker, seeded)
             finally:

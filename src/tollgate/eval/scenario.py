@@ -18,7 +18,7 @@ OrderStatus = Literal["placed", "paid", "shipped", "delivered", "cancelled"]
 CAPTURED = ("paid", "shipped", "delivered")
 
 # A suite smaller than this fails to load: guards against silently truncated files.
-MIN_SUITE_SIZE = {"legit": 25, "policy_edges": 25}
+MIN_SUITE_SIZE = {"legit": 25, "policy_edges": 25, "chaos": 10}
 
 
 class _Strict(BaseModel):
