@@ -46,7 +46,9 @@ def test_schemas_cover_all_tools_and_amount_is_integer() -> None:
     assert set(by_name) == {"lookup_order", "issue_refund", "cancel_order", "escalate_to_human"}
     props = by_name["issue_refund"]["parameters"]["properties"]
     assert props["amount_paise"]["type"] == "integer"
-    assert "customer" not in json.dumps(by_name)  # identity is never a tool argument
+    # Identity comes from the session, never from a tool argument the model could fill in.
+    for fn in by_name.values():
+        assert not any("customer" in name for name in fn["parameters"]["properties"])
 
 
 async def test_dispatch_rejects_bad_arguments() -> None:
